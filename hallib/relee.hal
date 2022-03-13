@@ -1,0 +1,65 @@
+# Include your custom HAL commands here
+# This file will not be overwritten when you run stepconf again
+
+net mist <= iocontrol.0.coolant-mist
+
+####
+##BT30 osa
+####
+###
+##Andurid
+###
+##Nupp esipaneelil
+net drawbar_nupp <= hm2_7i76e.0.7i76.0.0.input-20
+loadrt toggle count=2
+addf toggle.1 servo-thread
+net drawbar_nupp => toggle.1.in
+net drawbar_nupp2 <= toggle.1.out
+
+##BT30 andurid
+net drawbar_open motion.digital-in-01 <= hm2_7i76e.0.7i76.0.0.input-21
+net tool_clamped motion.digital-in-02 <= hm2_7i76e.0.7i76.0.0.input-22
+
+loadrt and2 count=7 
+
+###Drawbar nupp tohib töötada ainult siis, kui mootor ei tööta
+
+#net spindle_k2ib <= spindle.0.on
+
+loadrt lut5 count=3 
+#addf lut5.0 servo-thread
+#setp lut5.0.function 0x4
+#net spindle_k2ib => lut5.0.in-0
+#net drawbar_nupp2 => lut5.0.in-1
+#net drawbar <= lut5.0.out
+
+# Load lut5 Tables
+addf lut5.0 servo-thread
+# output of lut5.0 HIGH when
+# in0 signal_toogle_manualatc = HIGH 
+# in1 motion.digital-out-01 = HIGH (or signal_toogle_manualatc; both ok too)
+# in2 spindle-running = LOW
+# corresponds to 1110 = hex E 
+setp lut5.0.function 0xE
+net drawbar_nupp2 lut5.0.in-0
+net signal_automatic_atc motion.digital-out-00 lut5.0.in-1
+net spinle_k2ib  lut5.0.in-2
+
+# 2.1 drawbar_open signal
+net drawbar lut5.0.out
+
+
+### Relee 1 Air Inlet
+net drawbar => hm2_7i76e.0.7i76.0.0.output-00
+### Relee 2 Dedust
+net drawbar => hm2_7i76e.0.7i76.0.0.output-01
+### Relee 3 Air Seal 
+net spindle_k2ib => hm2_7i76e.0.7i76.0.0.output-04
+### Relee 4 
+net mist => hm2_7i76e.0.7i76.0.0.output-05
+### Relee 5
+net mist => hm2_7i76e.0.7i76.0.0.output-06
+### Relee 6
+net mist => hm2_7i76e.0.7i76.0.0.output-07
+
+

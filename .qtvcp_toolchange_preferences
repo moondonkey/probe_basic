@@ -1,0 +1,41 @@
+[SCREEN_OPTIONS]
+catch_errors = False
+desktop_notify = False
+shutdown_check = False
+sound_player_on = True
+mainwindow_geometry = 0 0 315 150
+
+[MCH_MSG_OPTIONS]
+mchnMsg_play_sound = True
+mchnMsg_speak_errors = True
+mchnMsg_sound_type = RING
+
+[USR_MSG_OPTIONS]
+usermsg_play_sound = True
+userMsg_sound_type = RING
+userMsg_use_focusOverlay = True
+
+[SHUTDOWN_OPTIONS]
+shutdown_play_sound = True
+shutdown_alert_sound_type = READY
+shutdown_exit_sound_type = LOGOUT
+shutdown_msg_title = Do you want to Shutdown now?
+shutdown_msg_detail = 
+
+[NOTIFY_OPTIONS]
+notify_start_greeting = True
+notify_start_title = Welcome
+notify_start_detail = This option can be changed in the preference file
+notify_start_timeout = 5
+
+[DIALOG_GEOMETRY]
+ToolChangeDialog-geometry = 0 31 303 107
+
+[DIALOG_OPTIONS]
+toolDialog_play_sound = True
+toolDialog_speak = True
+toolDialog_sound_type = READY
+
+[BOOK_KEEPING]
+style_QSS_Path = DEFAULT
+

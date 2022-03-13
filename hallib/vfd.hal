@@ -1,0 +1,84 @@
+#loadusr -Wn vfd hy_vfd -n vfd -d /dev/ttyUSB0 -p none -r 9600
+# Replace ttyUSB0 with the address of your adapter
+loadusr -W mb2hal config=modbus.ini
+show pin
+
+#setp vfd.enable 1 # This enables the VFD in the driver
+#net spindle-speed spindle.0.speed-out => vfd.speed-command
+#net spindle-cw spindle.0.forward => vfd.spindle-forward
+#net spindle-ccw spindle.0.reverse => vfd.spindle-reverse
+#net spindle-on spindle.0.on => vfd.spindle-on
+net spindle-current <= mb2hal.spindle_amp.00.float
+#net spindle-current => pyvcp.spindle-load-indicator
+#net spindle-speed-fb => vfd.spindle-speed-fb
+#net spindle-current <= vfd.OutA
+#net spindle-comm-ok <= vfd.hycomm-ok
+
+#net spindle-at-speed => vfd.spindle-at-speed
+#net spindle-at-speed <= spindle.0.at-speed
+
+net tegelik_freq <= mb2hal.vfd_freq.00.float
+net tegelik_freq => spindle.0.speed-in
+
+###kontrollime, kas spindel pöörleb vajaliku kiirusega
+###kõigepealt võrdleme kästud sagedust ja tegelikku sagedust
+loadrt near count=2
+addf near.0 servo-thread
+addf near.1 servo-thread
+setp near.0.scale 0.5 
+net tegelik_freq => near.0.in1
+
+### liigutasin selle postgui alla
+#net tegelik_freq => spindle.0.speed-in
+net Setpoint => near.0.in2
+net v6rdlus1 <= near.0.out
+###võrdleme, kas kästud sagedus erineb nullist
+setp near.1.difference 0.1
+net Setpoint => near.1.in1
+setp near.1.in2 0
+net v6rdlus2 <= near.1.out
+###sisestame mõlema võrdluse tulemused LUT5 tabelisse,
+addf lut5.1 servo-thread
+setp lut5.1.function 0x2
+net v6rdlus1 => lut5.1.in-0
+net v6rdlus2 => lut5.1.in-1
+###Kui VFD sagedus on kästud sagedus ja kästud sagedus ei ole null, siis on spindle-at-speed tõene
+net spindle-at-speed <= lut5.1.out
+net spindle-at-speed => spindle.0.at-speed
+
+loadrt mult2 count=2
+addf mult2.0 servo-thread
+loadrt mux4
+addf mux4.0 servo-thread
+#loadrt and2 count=6
+addf and2.4 servo-thread
+addf and2.5 servo-thread
+
+##korrutame 100 sageduse, et liigutada komakohtasid
+setp mult2.0.in0 100
+net spindle_speed <= spindle.0.speed-cmd-rps
+net spindle_speed =>  => mult2.0.in1
+net Setpoint1 mb2hal.freq.00 <= mult2.0.out
+## kaotame peale koma olevad numbrid ära
+loadrt conv_float_s32 count=1
+addf conv-float-s32.0 servo-thread
+net Setpoint1 => conv-float-s32.0.in
+net Setpoint2 <= conv-float-s32.0.out
+#loadrt conv_s32_float count=1
+addf conv-s32-float.1 servo-thread
+net Setpoint2 => conv-s32-float.1.in
+net Setpoint <= conv-s32-float.1.out
+
+
+net spindle_k2ib and2.4.in0 <= spindle.0.on
+net S-fwd and2.4.in1 <= spindle.0.forward
+net spindle_k2ib and2.5.in0 
+net S-rev and2.5.in1 <= spindle.0.reverse
+net S-on-fwd mux4.0.sel0 <= and2.4.out
+net S-on-rev mux4.0.sel1 <= and2.5.out
+setp mux4.0.in0 0 #stop
+setp mux4.0.in1 2 #forward
+setp mux4.0.in2 1 #reverse
+setp mux4.0.in3 4 #reset
+
+net control mb2hal.spindle.00 <= mux4.0.out

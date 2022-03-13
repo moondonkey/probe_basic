@@ -1,0 +1,264 @@
+; M6 REMAP Macro for ATC track ool change
+;
+; Assumptions
+; 1 Toolnumber is not equal to pocket number
+; 2 pocket number is the discriminating factor for pick up procedure (from rack, from manual position)
+; 3 all tools need to be measured 
+
+; Uses global numbered variable #5190  to store the pocket of the tool that gets mounted as a work around for the broken handler in linuxcnc tooltable
+; Note: If #5190 is manually entered into linuxnc.var it will be stored between starts of linun, this is currently not desired.
+; Uses M66 E0 (analog input 00 to obtain tool-prep-pocket from iocontrol. This is more stable than a call on #<_hal[iocontrol.0.tool-prep-pocket]> as TxM6 and Tx andd M6 seperately are interpreted)
+
+; Valve actuation is done using a single singal pin via M64 and M65 
+; Coding of Valves is done in HAl config with LUT5 logic
+
+
+o<toolchange3> sub
+
+;(auto-restore modal settings on return)
+M73 
+; print to console (if available)
+(print, Storing tool and pocket information in local variables)
+#<newtool> = #<selected_tool>
+#<oldtool> = #<tool_in_spindle>
+#<oldpocket> = #<current_pocket>
+#<NUMPOCKETS> = 2
+#<FIRSTPOCKET_X> = 229.626
+#<DELTA_X> = 137
+; height, where the spindle nose clears the tool holder 
+#<SAFE_Z> = -10
+#<SAFE_X> = 0
+; Height at which flush is triggered
+#<OFF_HEIGHT_Z> = -11
+#<DROPSPEEDRAPID> = 4500
+#<DROPSPEEDZ> = 750
+; Time to wait before drop off to ensure that the spindle is stopped in [s]
+#<WAITSPINDLE> = 0.5
+#<FIRSTPOCKET_Z> = -82.27
+
+
+;#<oldpocket> = #<_hal[iocontrol.0.tool-prep-pocket]>
+; call upon iocontrol.0.tool-prep-pocket via M66 and have it stored in #5399
+M66 E0 L0
+#<actual_pocket> = #5399
+
+
+#<newpocket> = #5399
+#5190=#5399
+
+;(DEBUG, newtool=#<newtool> newpocket=#<newpocket>)
+; we must execute this macro only in the milltask interpreter or preview will break, so test for '#<_task>' which is 1 for  the milltask interpreter and 0 in the UI's
+O100 if [#<_task> EQ 0]
+        (print, Task is Null)
+O100     return [999]
+O100 endif
+
+; Ensure everything that we do is done in absolute coordinates
+G90
+; Cutter comp off, otherwise G53 might go wrong
+G40
+; Cancel tool offset (not needed until the end)
+G49
+
+; First things first, rapid to safe Z
+G53 G0 Z[#<_ini[AXIS_Z]MAX_LIMIT>-0.1]
+
+
+; First, get rid of the old tool
+; check if the spindle is not empty by checking if tool_in_spindle GT 0
+O200 if [#<oldtool> EQ #<newtool>]
+    ; This is a special case in which no tool needs to be dropped off. This assumes that the user has the tool table under control. further down, during pick up of newtool a message will be brought forward to GUI
+    ;(DEBUG, do absolutly nothing)
+O200 elseif [#<oldtool> GT 0]
+    ; Check if oldpocket is within range
+    O210 if [#<oldpocket> GT 0]
+        O220 if [#<oldpocket> LE #<NUMPOCKETS>]
+            ;Tool within range, triggering put move to rack, assuming that the pocket is empty!
+            ; We are already at safe Z; now rapid to pre position for a specific pocket
+            G53 G0 Y75
+            G53 G0 X[#<FIRSTPOCKET_X> + [#<oldpocket> -1] * #<DELTA_X> - #<SAFE_X>] 
+            ;G53 G0 Y0
+            ; Now put the tool down gently 
+            G53 G1 Z[#<FIRSTPOCKET_Z>]   F#<DROPSPEEDRAPID>
+			G53 G1 Y25 F#<DROPSPEEDRAPID>
+			G4 P 20
+			G4  P #<WAITSPINDLE> 
+			G53 G1 Y0 F#<DROPSPEEDZ>
+            ;G53 G1 Z[#<OFF_HEIGHT_Z>]  F#<DROPSPEEDRAPID>
+            ; Wait briefly before opening spindle to ensure it has stopped, additionally spindle on = false is checke in hal
+            ;G4  P #<WAITSPINDLE> 
+            ;G53 G1 Z[#<FIRSTPOCKET_Z>]   F#<DROPSPEEDZ>
+            ; Open ATC Spindle
+            M64 P #<_ini[ATC_PINS]ATC_OPEN>
+            G4 P1
+            ;Check if Release was ok by watching pin to turn high (L3)
+            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0 Q1
+				O900 IF [#5399 NE 1]
+					 (DEBUG, drawbar no unlock)
+					 M2
+				O900 ENDIF
+            ; Move back to safe Z above the oldpocket
+            G53 G0 Z #<OFF_HEIGHT_Z> 
+            ; After this move there should be no tool left; check pin for going LOW L4 
+            M66 P #<_ini[ATC_PINS]SENSOR_TOOL> L0
+            O910 IF [#5399 EQ 1]
+                (DEBUG, Timeout! Tool still in spindle - Aborting!)
+				M2
+            
+            O910 ENDIF
+            ; Close spindle
+            M65 P #<_ini[ATC_PINS]ATC_OPEN>
+             ;(DEBUG, Drawbar closed) 
+            G53 G1 Z #<SAFE_Z> F#<DROPSPEEDRAPID> 
+            ; Now carefully escape from rack forks
+          
+            G53 G1 Y75 F12000
+            
+            G53 G0 Z[#<_ini[AXIS_Z]MAX_LIMIT>-0.1]
+            ;(DEBUG, Tool released and spindle cleared to Z0)
+        O220 else
+            ; The tool's pocket number is not within the range of the rack and the tool needs to be removed manually
+            ; Tool is still at safe Z height from before
+            ;(DEBUG, Pocket is not within range, moving to manual change positon)
+            G53 G0 X #<_ini[ATC]CHANGEX> 
+            G53 G0 Y #<_ini[ATC]CHANGEY>
+            G53 G0 Z #<_ini[ATC]CHANGEZ>
+            ;(MSG, Please remove tool manually from spindle using release button. Afterwards press OK)
+            ; Abuse M6 for a dialog with the user by briefly killing the requested tool and replacing it with T0
+            
+            T0
+            M6
+            T#<newtool>
+            ; Turn off flush and close drawbar to eliminate noise
+            ; clamp tool
+            ; TOOL_CLAMP 1; TOOL_RELEASE 0; FLUSH_OFF1; FLUSH_ON 0
+            M65 P #<_ini[ATC_PINS]ATC_OPEN>
+            G4 P0.2
+            ; Check if the tool is really gone (LOW)
+            M66 P #<_ini[ATC_PINS]SENSOR_TOOL> L0
+            G4 P0.2
+            O920 IF [#5399 EQ 1]
+                (DEBUG, Error! Tool still in spindle - Aborting!)
+            O920     return [999]
+            O920 ENDIF
+            ;(DEBUG, Finished  manual drop off) 
+        o220 endif
+    (print,  We are now without a tool at some position either safely above pocket or the manual change position)
+
+    O210 endif
+O200 else
+    ; There is nothing to do here but end the conditional
+    ;(DEBUG, There is no tool in the spindle - No action required at this time)
+O200 endif
+;(DEBUG, Reached end of drop off without error)
+;For reasons of being paranoid: go to safe Z 
+G53 G0 Z[#<_ini[AXIS_Z]MAX_LIMIT>-0.1]
+
+; Second Step, get new tool
+; Check if the new tool number is EQ 0
+o300 if [#<oldtool> EQ #<newtool>]
+    ; This is to check if the requested tool is already in the spindle. If so, all other steps are skipped an a message is displayed to the user using EBUG
+    ;(DEBUG, Attention - No tool change required. Not doing anything, check if tool offset remains valid)
+    ;M2
+O300 elseif [#<newtool> GT 0]
+    ; Tool is GT 0 and we thus need to get a tool from somewhere
+    ;(DEBUG, #<newtool> needs to be picked up)
+    ; Again, check if #newpocket is within range of the tool rack, otherwise pick at manual change position and measure
+    O310 if [#<newpocket> GT 0]
+    ; Check only for error handling
+        O320 if [#<newpocket> LE #<NUMPOCKETS>]
+            ; Tool within rack range, triggering get tool from rack, assuming that the pocket is filled
+            ;(DEBUG, Get from rack)
+            (print, Getting tool #<newtool> from rack at pocket #<newpocket>)
+            ; Assuming that the pockets are populated; rapid  move above selected_pocket at z0
+            (print, Moving to safe preposition at z0)
+            G53 G0 Z[#<_ini[AXIS_Z]MAX_LIMIT>-0.1]
+            G53 G0 Y75
+            G53 G0 X[#<FIRSTPOCKET_X> + [#<newpocket> -1] * #<DELTA_X> - #<SAFE_X>]
+            G53 G0 Y0
+            G53 G1 Z[#<OFF_HEIGHT_Z>]  F#<DROPSPEEDRAPID>
+            ; Wait briefly before opening spindle to ensure it has stopped, additionally spindle-running = false is check is done in hal
+            G4  P #<WAITSPINDLE>            (print, above  pocket #<newpocket>, opening drawbar)
+            ; Open spindle
+            M64 P #<_ini[ATC_PINS]ATC_OPEN>
+            g4 p0.2
+             ; Check if the drawbar is open HIGH L3 within permissible time
+            ;(DEBUG, opened ATC, picking)
+            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0 Q2
+            ;(DEBUG, 5399 #5399)
+            (print, check drawbar AFTER m64 SHOULD BE 1 value: #5399)
+            ;O930 IF [#5399 NE 0]
+            ;    (DEBUG, Error! The drawbar did not open - Aborting!)
+            ;O930     return [999]
+            ;O930 ENDIF  
+            ; Carefully drop Z onto pickup height
+            G53 G1 Z #<FIRSTPOCKET_Z> F#<DROPSPEEDZ>
+            ; close spindle
+            M65 P #<_ini[ATC_PINS]ATC_OPEN>
+            (Print, at pocket height, Now clamp the tool)
+            ; a short wait seems to be required for the motions pins to update
+            g4 P1.5
+            ; Check if the drawbar is locked (LOW) 
+            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0
+            (print, check drawbar close AFTER m65 should be 0; value: #5399)
+            ;(DEBUG, drawbar locked)
+            ;(DEBUG, 5399 #5399)
+            O940 IF [#5399 NE 0]
+                (DEBUG, Error! The drawbar did not close - Aborting!)
+            O940     return [999]
+            O940 ENDIF  
+            ; check 2: Is there a tool in the spindle Check immediately
+            M66 P #<_ini[ATC_PINS]SENSOR_TOOL> L0
+            (print, check tool in spindle AFTER M65 should be 1; VALUE #5399)
+            O950 IF [#5399 NE 0]
+                (DEBUG, Error! No tool found in spindle - Aborting!)
+            O950     return [999]
+            O950 ENDIF
+            ;(DEBUG, Tool locked, drawbar closed, ready to move)
+            ; Move slowly up to offheight_Z
+            G53 G1 Y15 F#<DROPSPEEDZ>
+            
+            G53 G0 Y75
+            M61 Q #<newtool>
+			;(DEBUG, loaded2)         
+
+        O320 elseif  [#<newpocket> GT #<NUMPOCKETS>]
+			;(DEBUG, no get rack)
+            ; The tool's pocket number is not within the range of the rack and the tool needs to picked up at the manual change position
+            ;(DEBUG, Selected pocket is not within range, moving to manual pick up)
+
+            G53 G0 Z[#<_ini[AXIS_Z]MAX_LIMIT>-0.1]
+            G53 G0 Y75
+            G53 G0 X[#<_ini[ATC]CHANGEX>] 
+            G53 G0 Y[#<_ini[ATC]CHANGEY>]
+            G53 G0 Z[#<_ini[ATC]CHANGEZ>]
+            M6
+            ; Check  1: the drawbar is locked LOW L4 immediately 
+            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0
+            ;O970 IF [#5399 EQ -1]
+            O970 IF [#5399 EQ 1]
+                (DEBUG, Error! The drawbar is still open - Aborting!)
+            O970     return [999]
+            O970 ENDIF  
+            ; check 2: there is a tool in the spindle HIGH L3 immediately 
+            M66 P #<_ini[ATC_PINS]SENSOR_TOOL> L0
+            O980 IF [#5399 NE 1]
+                (DEBUG, Error! No tool in spindle - Aborting!)
+            O980     return [999]
+            O980 ENDIF  
+            (print, A tool is manually loaded and we can continue with measurement)
+        o320 endif
+    o310 else
+		(DEBUG, ERROR)
+		M2
+	o310 endif
+        
+        
+o300 endif
+
+
+
+o<toolchange3> endsub [1]
+
+M2
+%

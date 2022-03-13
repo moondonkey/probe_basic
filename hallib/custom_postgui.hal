@@ -1,0 +1,69 @@
+# Include your custom_postgui HAL commands here
+# This file will not be overwritten when you run stepconf again
+
+
+
+net machine-is-enabled 	=> halui.machine.on
+
+net machine-not-enabled => halui.machine.off
+
+####
+
+loadrt time
+loadrt not
+
+addf time.0 servo-thread
+addf not.0 servo-thread
+
+#loadrt and2 count=4
+
+loadrt toggle2nist count=1
+
+addf and2.0 servo-thread
+addf and2.1 servo-thread
+addf and2.2 servo-thread
+addf and2.3 servo-thread
+addf or2.1 servo-thread
+addf toggle.0 servo-thread
+addf toggle2nist.0 servo-thread
+
+# External Program Pause/Resume and Run/Step Buttons
+# Pause/Resume Section
+net pause-resume-btn and2.0.in0 and2.1.in0 <= hm2_7i76e.0.7i76.0.0.input-12 
+net pause-on toggle2nist.0.is-on and2.0.in1 and2.3.in1 <= halui.program.is-paused
+net run-on and2.1.in1 <= halui.program.is-running
+net pause-sig or2.1.in0 <= and2.0.out
+net resume-sig or2.1.in1 <= and2.1.out
+net toggle-ok toggle.0.in <= or2.1.out
+net togglesig toggle2nist.0.in <= toggle.0.out
+net toggleon halui.program.pause <= toggle2nist.0.on
+net toggleoff halui.program.resume <= toggle2nist.0.off
+
+# Run/Step Section
+net run-step-btn and2.2.in0 and2.3.in0 <= hm2_7i76e.0.7i76.0.0.input-13 
+net idle-on and2.2.in1 not.0.in <= halui.program.is-idle
+net run-sig halui.mode.auto halui.program.run <= and2.2.out
+net step-sig halui.program.step <= and2.3.out
+
+net pause-on => hm2_7i76e.0.7i76.0.0.output-02
+net run-on => hm2_7i76e.0.7i76.0.0.output-03
+
+
+### Time
+#net prog-running not.0.in <= halui.program.is-idle
+net cycle-timer time.0.start <= not.0.out
+net cycle-seconds qtpyvcp.timerseconds.in <= time.0.seconds
+net cycle-minutes qtpyvcp.timerminutes.in <= time.0.minutes
+net cycle-hours qtpyvcp.timerhours.in <= time.0.hours
+
+### spindle speed ja muu nodi sest POSTGUI osa
+
+addf mult2.1 servo-thread
+setp mult2.1.in1 0.6
+net tegelik_freq => mult2.1.in0
+net tegelik_freq60 <= mult2.1.out
+
+net tegelik_freq => spindle.0.speed-in
+setp qtpyvcp.spindle-load-indicator.max-val 760
+net spindle-current => qtpyvcp.spindle-load-indicator.in-f
+

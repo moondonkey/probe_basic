@@ -1,0 +1,38 @@
+T1 P5 Z+37.079909 ; - 6x8
+T2 P5 Z-64.703400 ; Inovatools 4mm spot drill
+T3 P5 Z+25.000000 ; Ecostar - otsfrees Z/1 D3.0x12x40-S3mm 25° Plast/ALU HM
+T4 P5 Z+464.885698 ; KWB - 2,5 mm metallipuur
+T5 P5 Z+145.425657 ; Hiina - 3mm Z1
+T6 P5 Z+164.505888 ; Hiina - 3mm metallipuur
+T7 P5 Z-108.497060 ; StimZet - 6x90
+T8 P5 Z-16.969244 ; -
+T9 P5 Z+29.730758 ; - 6mm ball
+T10 P5 Z-30.581700 ; OSAWA - 4x6x7x51 otsfrees
+T11 P5 Z+22.057425 ; InovaTools - 4mm 45kraadi
+T12 P5 Z+26.407012 ; - 5mm lühike
+T13 P5 Z+127.186433 ; OSAWA - 6x6x31x57 3F
+T14 P5 Z+143.845100 ; Attila - 7mm lühike
+T15 P2 Z+154.525867 ; - 4.2 mm metallipuur
+T16 P5 ; - 5.5mm metallipuur
+T17 P5 Z+29.120758 ; Cerin - 6mm Z1
+T18 P3 D4.000000 Z+22.826175 ; Cerin - 4mm Z1
+T19 P5 Z+17.073258 ; Cerin - 3mm Z1
+T20 P5 ; - Hiina
+T21 P5 Z+9.634355 ; 32mm Freesi oma
+T22 P1 Z+46.825758 ; CERIN - 8mm Z1
+T23 P5 Z+148.291300 ; ZPS-FN - 12x16 Z2
+T24 P5 Z-110.044066 ; ZPS-FN -
+T25 P5 Z+12.833111 ; BAP300R
+T26 P5 Z+129.248150 ; 10x22 Z2 ZPS-FN.CZ
+T27 P5 Z+58.799431 ; 20mm KWB puidufrees
+T28 P5 Z-57.107237 ; 8mm KWB puidufrees
+T29 P5 Z+28.878675 ; M6 threadmill
+T30 P5 Z+18.919508 ; M5 THREADMILL
+T31 P5 Z+108.611433 ; 1.5x5mm Z3
+T32 P5 Z+39.868611 ; 6mm lühike puur
+T33 P5 D2.000000 Z-18.474238 ; 2mm otsfrees
+T34 P5 Z+10.509095 ; 60kraadi graveerimine
+T35 P5 Z+37.007842 ; 26x36 roughing Z4
+T98 P5 ; spindle nose
+T99 P5 D2.000000 Z+52.884925 ; PROBE
+T36 P0 ; BAP400R
