@@ -5,8 +5,8 @@ loadrt or2 count=2
 addf or2.0 servo-thread
 
 
-net tool_sensor-in  <= hm2_7i76e.0.7i76.0.0.input-08
-net probe-in          	<= hm2_7i76e.0.7i76.0.0.input-09
+net tool_sensor-in  <= hm2_7i76e.0.7i76.0.0.input-09-not
+net probe-in          	<= hm2_7i76e.0.7i76.0.0.input-08
 
 net tool_sensor-in => or2.0.in0
 net probe-in => or2.0.in1

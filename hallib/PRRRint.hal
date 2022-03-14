@@ -276,7 +276,7 @@ net tool-number             iocontrol.0.tool-prep-number  =>  hal_manualtoolchan
 
 net tool-prepare-loopback   iocontrol.0.tool-prepare      =>  iocontrol.0.tool-prepared
 
-loadrt conv_s32_float count=2
+loadrt conv_s32_float count=3
 addf conv-s32-float.0 servo-thread
 net pocket-s32 iocontrol.0.tool-prep-pocket conv-s32-float.0.in
 net pocket-float conv-s32-float.0.out motion.analog-in-00

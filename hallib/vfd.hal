@@ -1,5 +1,4 @@
-#loadusr -Wn vfd hy_vfd -n vfd -d /dev/ttyUSB0 -p none -r 9600
-# Replace ttyUSB0 with the address of your adapter
+
 loadusr -W mb2hal config=modbus.ini
 show pin
 

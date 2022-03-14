@@ -15,8 +15,6 @@ loadrt not
 addf time.0 servo-thread
 addf not.0 servo-thread
 
-#loadrt and2 count=4
-
 loadrt toggle2nist count=1
 
 addf and2.0 servo-thread
