@@ -95,7 +95,9 @@ O200 elseif [#<oldtool> GT 0]
             M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0 Q1
 				O900 IF [#5399 NE 1]
 					 (DEBUG, drawbar no unlock)
-					 M2
+					 M64 P2
+					 G04 P1
+					 M65 P2
 				O900 ENDIF
             ; Move back to safe Z above the oldpocket
             G53 G0 Z #<OFF_HEIGHT_Z> 
@@ -103,8 +105,9 @@ O200 elseif [#<oldtool> GT 0]
             M66 P #<_ini[ATC_PINS]SENSOR_TOOL> L0
             O910 IF [#5399 EQ 1]
                 (DEBUG, Timeout! Tool still in spindle - Aborting!)
-				M2
-            
+				M64 P2
+				G04 P1
+				M65 P2
             O910 ENDIF
             ; Close spindle
             M65 P #<_ini[ATC_PINS]ATC_OPEN>
@@ -139,6 +142,9 @@ O200 elseif [#<oldtool> GT 0]
             G4 P0.2
             O920 IF [#5399 EQ 1]
                 (DEBUG, Error! Tool still in spindle - Aborting!)
+                M64 P2
+                G04 P1
+				M65 P2
             O920     return [999]
             O920 ENDIF
             ;(DEBUG, Finished  manual drop off) 
@@ -238,12 +244,18 @@ O300 elseif [#<newtool> GT 0]
             ;O970 IF [#5399 EQ -1]
             O970 IF [#5399 EQ 1]
                 (DEBUG, Error! The drawbar is still open - Aborting!)
+                M64 P2
+                G04 P1
+				M65 P2
             O970     return [999]
             O970 ENDIF  
             ; check 2: there is a tool in the spindle HIGH L3 immediately 
             M66 P #<_ini[ATC_PINS]SENSOR_TOOL> L0
             O980 IF [#5399 NE 1]
                 (DEBUG, Error! No tool in spindle - Aborting!)
+                M64 P2
+                G04 P1
+				M65 P2
             O980     return [999]
             O980 ENDIF  
             (print, A tool is manually loaded and we can continue with measurement)

@@ -35,6 +35,9 @@ G90    (set absolute coordinates)
 G53 G0 Z-0.1    (move to z0 home position)
 G53 G0 X#<tool_touch_x_coords> Y#<tool_touch_y_coords>
 G53 G0 Z#<tool_touch_z_coords>
+M64 P3
+G04 P2
+M65 P3
 
 G91
 F #<fast_probe_fr>

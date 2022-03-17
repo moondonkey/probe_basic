@@ -1,7 +1,7 @@
 # Include your custom HAL commands here
 # This file will not be overwritten when you run stepconf again
 
-loadrt or2 count=2
+
 addf or2.0 servo-thread
 
 

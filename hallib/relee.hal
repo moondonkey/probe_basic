@@ -26,7 +26,7 @@ loadrt and2 count=7
 
 #net spindle_k2ib <= spindle.0.on
 
-loadrt lut5 count=3 
+
 #addf lut5.0 servo-thread
 #setp lut5.0.function 0x4
 #net spindle_k2ib => lut5.0.in-0
@@ -49,16 +49,17 @@ net spinle_k2ib  lut5.0.in-2
 net drawbar lut5.0.out
 
 
+
 ### Relee 1 Air Inlet
 net drawbar => hm2_7i76e.0.7i76.0.0.output-00
 ### Relee 2 Dedust
 net drawbar => hm2_7i76e.0.7i76.0.0.output-01
 ### Relee 3 Air Seal 
 net spindle_k2ib => hm2_7i76e.0.7i76.0.0.output-04
-### Relee 4 
+### Relee 4 Mist ülemine kraan
 net mist => hm2_7i76e.0.7i76.0.0.output-05
-### Relee 5
-net mist => hm2_7i76e.0.7i76.0.0.output-06
+### Relee 5 Tool sensor clean
+net tool_sensor_clean motion.digital-out-03 => hm2_7i76e.0.7i76.0.0.output-06
 ### Relee 6
 net mist => hm2_7i76e.0.7i76.0.0.output-07
 
