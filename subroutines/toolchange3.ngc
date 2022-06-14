@@ -21,9 +21,9 @@ M73
 (print, Storing tool and pocket information in local variables)
 #<newtool> = #<selected_tool>
 #<oldtool> = #<tool_in_spindle>
-#<oldpocket> = #<current_pocket>
-#<NUMPOCKETS> = 2
-#<FIRSTPOCKET_X> = 229.626
+#<oldpocket> = #5190
+#<NUMPOCKETS> = 5
+#<FIRSTPOCKET_X> = 149.389	
 #<DELTA_X> = 137
 ; height, where the spindle nose clears the tool holder 
 #<SAFE_Z> = -10
@@ -33,8 +33,9 @@ M73
 #<DROPSPEEDRAPID> = 4500
 #<DROPSPEEDZ> = 750
 ; Time to wait before drop off to ensure that the spindle is stopped in [s]
-#<WAITSPINDLE> = 0.5
-#<FIRSTPOCKET_Z> = -82.27
+#<WAITSPINDLE> = 15
+#<FIRSTPOCKET_Z> = -90.130
+#<POCKET_Y> = 14.442
 
 
 ;#<oldpocket> = #<_hal[iocontrol.0.tool-prep-pocket]>
@@ -66,6 +67,7 @@ G53 G0 Z[#<_ini[AXIS_Z]MAX_LIMIT>-0.1]
 
 ; First, get rid of the old tool
 ; check if the spindle is not empty by checking if tool_in_spindle GT 0
+;(DEBUG, oldpocket  #<oldpocket> )
 O200 if [#<oldtool> EQ #<newtool>]
     ; This is a special case in which no tool needs to be dropped off. This assumes that the user has the tool table under control. further down, during pick up of newtool a message will be brought forward to GUI
     ;(DEBUG, do absolutly nothing)
@@ -80,10 +82,10 @@ O200 elseif [#<oldtool> GT 0]
             ;G53 G0 Y0
             ; Now put the tool down gently 
             G53 G1 Z[#<FIRSTPOCKET_Z>]   F#<DROPSPEEDRAPID>
-			G53 G1 Y25 F#<DROPSPEEDRAPID>
-			G4 P 20
+			G53 G1 Y40 F#<DROPSPEEDRAPID>
+			
 			G4  P #<WAITSPINDLE> 
-			G53 G1 Y0 F#<DROPSPEEDZ>
+			G53 G1 Y#<POCKET_Y> F#<DROPSPEEDZ>
             ;G53 G1 Z[#<OFF_HEIGHT_Z>]  F#<DROPSPEEDRAPID>
             ; Wait briefly before opening spindle to ensure it has stopped, additionally spindle on = false is checke in hal
             ;G4  P #<WAITSPINDLE> 
@@ -181,16 +183,16 @@ O300 elseif [#<newtool> GT 0]
             G53 G0 Z[#<_ini[AXIS_Z]MAX_LIMIT>-0.1]
             G53 G0 Y75
             G53 G0 X[#<FIRSTPOCKET_X> + [#<newpocket> -1] * #<DELTA_X> - #<SAFE_X>]
-            G53 G0 Y0
+            G53 G0 Y#<POCKET_Y>
             G53 G1 Z[#<OFF_HEIGHT_Z>]  F#<DROPSPEEDRAPID>
             ; Wait briefly before opening spindle to ensure it has stopped, additionally spindle-running = false is check is done in hal
-            G4  P #<WAITSPINDLE>            (print, above  pocket #<newpocket>, opening drawbar)
+            G4  P 1            (print, above  pocket #<newpocket>, opening drawbar)
             ; Open spindle
             M64 P #<_ini[ATC_PINS]ATC_OPEN>
             g4 p0.2
              ; Check if the drawbar is open HIGH L3 within permissible time
             ;(DEBUG, opened ATC, picking)
-            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0 Q2
+            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0 Q4
             ;(DEBUG, 5399 #5399)
             (print, check drawbar AFTER m64 SHOULD BE 1 value: #5399)
             ;O930 IF [#5399 NE 0]
@@ -203,14 +205,15 @@ O300 elseif [#<newtool> GT 0]
             M65 P #<_ini[ATC_PINS]ATC_OPEN>
             (Print, at pocket height, Now clamp the tool)
             ; a short wait seems to be required for the motions pins to update
-            g4 P1.5
+            g4 P1
             ; Check if the drawbar is locked (LOW) 
-            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0
+            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L3 Q2
             (print, check drawbar close AFTER m65 should be 0; value: #5399)
             ;(DEBUG, drawbar locked)
             ;(DEBUG, 5399 #5399)
-            O940 IF [#5399 NE 0]
+            O940 IF [#5399 NE 1]
                 (DEBUG, Error! The drawbar did not close - Aborting!)
+
             O940     return [999]
             O940 ENDIF  
             ; check 2: Is there a tool in the spindle Check immediately
@@ -222,7 +225,7 @@ O300 elseif [#<newtool> GT 0]
             O950 ENDIF
             ;(DEBUG, Tool locked, drawbar closed, ready to move)
             ; Move slowly up to offheight_Z
-            G53 G1 Y15 F#<DROPSPEEDZ>
+            G53 G1 Y35 F#<DROPSPEEDZ>
             
             G53 G0 Y75
             M61 Q #<newtool>
@@ -240,7 +243,7 @@ O300 elseif [#<newtool> GT 0]
             G53 G0 Z[#<_ini[ATC]CHANGEZ>]
             M6
             ; Check  1: the drawbar is locked LOW L4 immediately 
-            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0
+            M66 P #<_ini[ATC_PINS]SENSOR_DRAWBAR> L0 Q2
             ;O970 IF [#5399 EQ -1]
             O970 IF [#5399 EQ 1]
                 (DEBUG, Error! The drawbar is still open - Aborting!)
@@ -264,7 +267,7 @@ O300 elseif [#<newtool> GT 0]
 		(DEBUG, ERROR)
 		M2
 	o310 endif
-        
+G53 G0 Z[#<_ini[AXIS_Z]MAX_LIMIT>-0.1]        
         
 o300 endif
 

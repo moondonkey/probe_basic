@@ -272,7 +272,6 @@ setp lut5.2.function 0x2
 net estop-out	  => lut5.2.in-0
 net toolchange_fail <= motion.digital-out-02
 net toolchange_fail => lut5.2.in-1
-
 net estop 			<= lut5.2.out
 net estop       =>  iocontrol.0.emc-enable-in
 
@@ -282,6 +281,7 @@ loadusr -W hal_manualtoolchange
 net tool-change-request     iocontrol.0.tool-change       =>  hal_manualtoolchange.change
 net tool-change-confirmed   iocontrol.0.tool-changed      <=  hal_manualtoolchange.changed
 net tool-number             iocontrol.0.tool-prep-number  =>  hal_manualtoolchange.number
+
 
 net tool-prepare-loopback   iocontrol.0.tool-prepare      =>  iocontrol.0.tool-prepared
 
