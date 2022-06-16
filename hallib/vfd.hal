@@ -1,6 +1,8 @@
 
 loadusr -W mb2hal config=modbus.ini
 show pin
+loadrt and2 count=7 
+loadrt wcomp count=1
 
 #setp vfd.enable 1 # This enables the VFD in the driver
 #net spindle-speed spindle.0.speed-out => vfd.speed-command
@@ -43,7 +45,15 @@ net v6rdlus1 => lut5.1.in-0
 net v6rdlus2 => lut5.1.in-1
 ###Kui VFD sagedus on kästud sagedus ja kästud sagedus ei ole null, siis on spindle-at-speed tõene
 net spindle-at-speed <= lut5.1.out
-net spindle-at-speed => spindle.0.at-speed
+
+###Lisaread, et G1 toimiks
+addf or2.3 servo-thread
+net at-speed-digital <= motion.digital-out-01 
+net at-speed-digital => or2.3.in0
+net spindle-at-speed => or2.3.in1
+net spindle-at-speed2 <= or2.3.out
+
+net spindle-at-speed2 => spindle.0.at-speed
 
 loadrt mult2 count=2
 addf mult2.0 servo-thread
@@ -81,3 +91,69 @@ setp mux4.0.in2 1 #reverse
 setp mux4.0.in3 4 #reset
 
 net control mb2hal.spindle.00 <= mux4.0.out
+
+net mist <= iocontrol.0.coolant-mist
+
+####
+##BT30 osa
+####
+###
+##Andurid
+###
+##Nupp esipaneelil
+net drawbar_nupp <= hm2_7i76e.0.7i76.0.0.input-20
+loadrt toggle count=2
+addf toggle.1 servo-thread
+net drawbar_nupp => toggle.1.in
+net drawbar_nupp2 <= toggle.1.out
+
+##BT30 andurid
+net drawbar_open motion.digital-in-01 <= hm2_7i76e.0.7i76.0.0.input-21
+net tool_clamped motion.digital-in-02 <= hm2_7i76e.0.7i76.0.0.input-22
+
+
+addf wcomp.0 servo-thread
+
+###Drawbar nupp tohib töötada ainult siis, kui mootor ei tööta
+##Selleks vaatame, kas kas vfd current > 0. Kui on > 0, siis järelikult mootor käib ringi
+net spindle-current => wcomp.0.in
+setp wcomp.0.min 0.1
+setp wcomp.0.max 100
+net spindle_keerleb_mitte motion.digital-in-03 <= wcomp.0.under
+
+#addf lut5.0 servo-thread
+#setp lut5.0.function 0x4
+#net spindle_k2ib => lut5.0.in-0
+#net drawbar_nupp2 => lut5.0.in-1
+#net drawbar <= lut5.0.out
+
+# Load lut5 Tables
+addf lut5.0 servo-thread
+# output of lut5.0 HIGH when
+# in0 signal_toogle_manualatc = HIGH 
+# in1 motion.digital-out-01 = HIGH (or signal_toogle_manualatc; both ok too)
+# in2 spindle-running = LOW
+# corresponds to 1110 = hex E 
+setp lut5.0.function 0xe0
+net drawbar_nupp2 lut5.0.in-0
+net signal_automatic_atc motion.digital-out-00 lut5.0.in-1
+net spindle_keerleb_mitte  lut5.0.in-2
+
+
+# 2.1 drawbar_open signal
+net drawbar lut5.0.out
+
+
+
+### Relee 1 Air Inlet
+net drawbar => hm2_7i76e.0.7i76.0.0.output-00
+### Relee 2 Dedust
+net drawbar => hm2_7i76e.0.7i76.0.0.output-01
+### Relee 3 Air Seal 
+net spindle_k2ib => hm2_7i76e.0.7i76.0.0.output-04
+### Relee 4 Mist ülemine kraan
+net mist => hm2_7i76e.0.7i76.0.0.output-05
+### Relee 5 Tool sensor clean
+net tool_sensor_clean motion.digital-out-03 => hm2_7i76e.0.7i76.0.0.output-06
+### Relee 6
+net mist => hm2_7i76e.0.7i76.0.0.output-07

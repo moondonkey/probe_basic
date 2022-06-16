@@ -9,7 +9,7 @@ loadrt hostmot2
 loadrt hm2_eth board_ip="10.10.10.10" config=" num_encoders=1 num_pwmgens=0 num_stepgens=5 sserial_port_0=00xxxx" 
 setp    hm2_7i76e.0.watchdog.timeout_ns 5000000
 loadrt pid names=pid.x,pid.y,pid.y2,pid.z,pid.s
-loadrt or2 count=3
+loadrt or2 count=4
 loadrt lut5 count=3
 
 addf hm2_7i76e.0.read          servo-thread

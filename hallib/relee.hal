@@ -2,6 +2,7 @@
 # This file will not be overwritten when you run stepconf again
 
 net mist <= iocontrol.0.coolant-mist
+loadrt wcomp count=1
 
 ####
 ##BT30 osa
@@ -20,12 +21,15 @@ net drawbar_nupp2 <= toggle.1.out
 net drawbar_open motion.digital-in-01 <= hm2_7i76e.0.7i76.0.0.input-21
 net tool_clamped motion.digital-in-02 <= hm2_7i76e.0.7i76.0.0.input-22
 
-loadrt and2 count=7 
+
+addf wcomp.0 servo-thread
 
 ###Drawbar nupp tohib töötada ainult siis, kui mootor ei tööta
-
-#net spindle_k2ib <= spindle.0.on
-
+##Selleks vaatame, kas kas vfd current > 0. Kui on > 0, siis järelikult mootor käib ringi
+net spindle-current => wcomp.0.in
+setp wcomp.0.min 0.1
+setp wcomp.0.max 100
+net spindle_keerleb_mitte motion.digital-in-03 <= wcomp.0.under
 
 #addf lut5.0 servo-thread
 #setp lut5.0.function 0x4
@@ -40,10 +44,11 @@ addf lut5.0 servo-thread
 # in1 motion.digital-out-01 = HIGH (or signal_toogle_manualatc; both ok too)
 # in2 spindle-running = LOW
 # corresponds to 1110 = hex E 
-setp lut5.0.function 0xE
+setp lut5.0.function 0xe0
 net drawbar_nupp2 lut5.0.in-0
 net signal_automatic_atc motion.digital-out-00 lut5.0.in-1
-net spinle_k2ib  lut5.0.in-2
+net spindle_keerleb_mitte  lut5.0.in-2
+
 
 # 2.1 drawbar_open signal
 net drawbar lut5.0.out
