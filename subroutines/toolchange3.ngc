@@ -26,7 +26,7 @@ M73
 #<oldpocket> = #5190
 #<NUMPOCKETS> = 5
 #<FIRSTPOCKET_X> = 149.389	
-#<DELTA_X> = 137
+#<DELTA_X> = 100
 ; height, where the spindle nose clears the tool holder 
 #<SAFE_Z> = -10
 #<SAFE_X> = 0
@@ -37,7 +37,7 @@ M73
 ; Time to wait before drop off to ensure that the spindle is stopped in [s]
 #<WAITSPINDLE> = 15
 #<FIRSTPOCKET_Z> = -90.130
-#<POCKET_Y> = 14.442
+#<POCKET_Y> = 13.442
 
 
 ;#<oldpocket> = #<_hal[iocontrol.0.tool-prep-pocket]>
@@ -90,9 +90,9 @@ O200 elseif [#<oldtool> GT 0]
             ; Now put the tool down gently 
             
             G53 G0 Z[#<FIRSTPOCKET_Z>]   F#<DROPSPEEDRAPID>
-            ;G53 G0 Z-90.130  
             
-			G53 G0 Y40
+            
+			G53 G0 Y45
 			
 			M64 P1
 			M66 P3 L3 Q60
@@ -118,7 +118,7 @@ O200 elseif [#<oldtool> GT 0]
 					 M65 P2
 				O900 ENDIF
             ; Move back to safe Z above the oldpocket
-            
+            G4 P2
             G53 G0 Z #<OFF_HEIGHT_Z> 
             ; After this move there should be no tool left; check pin for going LOW L4 
             M66 P #<_ini[ATC_PINS]SENSOR_TOOL> L0
