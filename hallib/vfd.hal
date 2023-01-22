@@ -2,10 +2,7 @@
 loadusr -W mb2hal config=modbus.ini
 show pin
 loadrt and2 count=7 
-loadrt wcomp count=2
-
-loadrt siggen
-
+loadrt wcomp count=1
 
 #setp vfd.enable 1 # This enables the VFD in the driver
 #net spindle-speed spindle.0.speed-out => vfd.speed-command
@@ -66,23 +63,10 @@ addf mux4.0 servo-thread
 addf and2.4 servo-thread
 addf and2.5 servo-thread
 
-
-
 ##korrutame 100 sageduse, et liigutada komakohtasid
 setp mult2.0.in0 100
 net spindle_speed <= spindle.0.speed-cmd-rps
-
-addf siggen.0.update servo-thread
-
-setp siggen.0.frequency 1 # 1 Hz
-setp siggen.0.amplitude 0.5 # +-50 RPM
-
-net spindle_speed => siggen.0.offset
-net mod_spindle_speed <= siggen.0.sine
-net mod_spindle_speed => mult2.0.in1
-
-
-#net spindle_speed =>  => mult2.0.in1
+net spindle_speed =>  => mult2.0.in1
 net Setpoint1 mb2hal.freq.00 <= mult2.0.out
 ## kaotame peale koma olevad numbrid ära
 loadrt conv_float_s32 count=1
@@ -93,8 +77,6 @@ net Setpoint2 <= conv-float-s32.0.out
 addf conv-s32-float.1 servo-thread
 net Setpoint2 => conv-s32-float.1.in
 net Setpoint <= conv-s32-float.1.out
-
-
 
 
 net spindle_k2ib and2.4.in0 <= spindle.0.on

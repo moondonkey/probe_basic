@@ -1,5 +1,5 @@
-o<toolchange> sub
-(print, o<toolchange>)
+o<toolchange4> sub
+(print, o<toolchange4>)
 
 O001 if [#<_task> EQ 0]
   (debug, Task is null)
@@ -29,18 +29,32 @@ O001 endif (this code eliminates tool missing error on load for multiple use too
 #100 = #<selected_tool>
 #110 = #<tool_in_spindle>
 #120 = #<selected_pocket>
+(DEBUG, pocket #120)
+(DEBUG, 5190 #5190)
+(DEBUG, 5191 #5191)
+(DEBUG, 5192 #5192)
+(DEBUG, 5193 #5193)
+(DEBUG, 5194 #5194)
+;O10 if [#100 EQ #110] ; checks if tool in the spindle is same as requested
+; (DEBUG, tool same)
+; o<toolchange4> endsub [1]
+;M2
+;O10 endif
 
-O10 if [#100 EQ #110] ; checks if tool in the spindle is same as requested
- o<toolchange> endsub [1]
-M2
-O10 endif
+G90 
+0110 if [#120 EQ #1]
+	G53 G0 Z-1
+0110 endif
 
+0120 if [#120 GT 1]
+	(DEBUG, suurem)
+0120 endif
 #<next_pocket> = 0 ; assigns 0 to the next pocket for a later check if the tool is found in the carousel
 #<open_pocket> = 0
 
 #15 = 12 ;assign test parameter the number of pockets in the carousel
 
-O100 do
+O200 do
  	O110 if [#[5189 + #15] EQ #100] ; checks all pockets to see if it contains tool number requested as the new tool
 		#<next_pocket> = #15 ; if tool is found in pocket, assigns the next pocket
 
@@ -51,11 +65,11 @@ O100 do
 
 	O115 endif
   #15= [#15 - 1]
-O100 while [#15 GT 0]
+O200 while [#15 GT 0]
 
-O120 if [#<next_pocket> EQ 0] ; if tool is not found, aborts and sends a message
+O220 if [#<next_pocket> EQ 0] ; if tool is not found, aborts and sends a message
     (abort, tool not in carousel)
-O120 endif
+O220 endif
 
 ;now we know which pocket the next tool is sitting in
 ;we need to know if we need to put a tool away
@@ -142,6 +156,6 @@ o<010> endif
 
 M68 E20 Q[#<coolant_final_angle>]
 
-o<toolchange> endsub [1]
+o<toolchange4> endsub [1]
 
 M2
