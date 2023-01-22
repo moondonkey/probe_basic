@@ -3,12 +3,28 @@
 
 
 addf or2.0 servo-thread
-
+addf and2.6 servo-thread
+addf wcomp.1 servo-thread
+addf conv-s32-float.2 servo-thread
 
 net tool_sensor-in  <= hm2_7i76e.0.7i76.0.0.input-09-not
-net probe-in          	<= hm2_7i76e.0.7i76.0.0.input-08
+net probe-in          	<= hm2_7i76e.0.7i76.0.0.input-08-not
 
-net tool_sensor-in => or2.0.in0
+setp wcomp.1.min    4.9
+setp wcomp.1.max    5.1
+
+net machine-motion-type-s32     motion.motion-type             =>     conv-s32-float.2.in
+net machine-motion-type-float     conv-s32-float.2.out         =>     wcomp.1.in
+net machineisprobing <= wcomp.1.out
+
+net machineisprobing => and2.6.in0
+net tool_sensor-in => and2.6.in1
+net tool_sensor-in_fixed <= and2.6.out
+
+
+
+
+net tool_sensor-in_fixed => or2.0.in0
 net probe-in => or2.0.in1
 net probe-tool or2.0.out
 net probe-tool => motion.probe-input

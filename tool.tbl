@@ -1,40 +1,40 @@
 T1 P6 Z+37.079909 ; - 6x8
 T2 P6 Z-64.703400 ; Inovatools 4mm spot drill
 T3 P6 Z+25.000000 ; Ecostar - otsfrees Z/1 D3.0x12x40-S3mm 25° Plast/ALU HM
-T4 P1 Z+91.077664 ; KWB - 2,5 mm metallipuur
+T4 P5 Z+109.917912 ; KWB - 2,5 mm metallipuur
 T5 P6 Z+145.425657 ; Hiina - 3mm Z1
-T6 P6 Z+94.258081 ; Hiina - 3mm metallipuur
-T7 P3 Z+57.214748 ; StimZet - 6x90
+T6 P7 Z+70.488081 ; Hiina - 3mm metallipuur
+T7 P4 Z+76.761245 ; StimZet - 6x90
 T8 P6 Z+52.195581 ; -
-T9 P4 Z+64.888914 ; - 6mm ball
+T9 P7 Z+56.751561 ; - 6mm ball
 T10 P6 Z-30.581700 ; OSAWA - 4x6x7x51 otsfrees
 T11 P6 Z+56.320164 ; InovaTools - 4mm 45kraadi
 T12 P6 Z+93.093081 ; - 5mm lühike
 T13 P6 Z+127.186433 ; OSAWA - 6x6x31x57 3F
 T14 P6 Z+143.845100 ; Attila - 7mm lühike
-T15 P6 Z+154.525867 ; - 4.2 mm metallipuur
+T15 P7 Z+88.043081 ; - 4.2 mm metallipuur
 T16 P6 ; - 5.5mm metallipuur
-T17 P2 Z+64.736831 ; Cerin - 6mm Z1
-T18 P6 D4.000000 Z+55.307248 ; Cerin - 4mm Z1
-T19 P5 Z+52.603081 ; Cerin - 3mm Z1
+T17 P2 Z+82.969162 ; Cerin - 6mm Z1
+T18 P7 D4.000000 Z+39.459748 ; Cerin - 4mm Z1
+T19 P1 Z+79.192079 ; Cerin - 3mm Z1
 T20 P6 ; - Hiina
 T21 P6 Z+9.634355 ; 32mm Freesi oma
-T22 P6 Z+82.377248 ; CERIN - 8mm Z1
+T22 P3 Z+101.596245 ; CERIN - 8mm Z1
 T23 P6 Z+148.291300 ; ZPS-FN - 12x16 Z2
 T24 P6 Z-110.044066 ; ZPS-FN -
-T25 P6 Z+67.031414 ; BAP300R
+T25 P7 Z+66.091239 ; BAP300R
 T26 P6 Z+129.248150 ; 10x22 Z2 ZPS-FN.CZ
 T27 P6 Z+57.993081 ; 20mm KWB puidufrees
-T28 P6 Z-57.107237 ; 8mm KWB puidufrees
-T29 P6 Z+64.420998 ; M6 threadmill
-T30 P6 Z+54.783498 ; M5 THREADMILL
-T31 P6 Z+108.611433 ; 1.5x5mm Z3
+T28 P6 Z+43.083914 ; 10mm KWB puidufrees
+T29 P7 Z+83.041662 ; M6 threadmill
+T30 P6 Z+35.535164 ; M5 THREADMILL
+T31 P6 Z+45.553498 ; 1.5x5mm Z3
 T32 P6 Z+39.868611 ; 6mm lühike puur
 T33 P6 D2.000000 Z-18.474238 ; 2mm otsfrees
 T34 P6 Z+10.509095 ; 60kraadi graveerimine
 T35 P6 Z+72.495164 ; 26x36 roughing Z4
 T36 P6 ; BAP400R
 T37 P6 Z+53.551831 ; 6mm Z2
-T38 P6 Z+56.317664 ; 6mmx13 z2 kõvasulam
+T38 P7 Z+37.652664 ; 6mmx13 z2 kõvasulam
 T98 P6 ; spindle nose
-T99 P6 D2.000000 Z+88.209483 ; PROBE
+T99 P6 D2.000000 Z+99.449579 ; PROBE
