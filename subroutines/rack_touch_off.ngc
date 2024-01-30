@@ -1,0 +1,32 @@
+o<rack_touch_off> sub
+
+#<NUMPOCKETS> = 5
+#100 = 0
+G04 P0.01
+
+
+O100 WHILE [#100 LT 25]
+	M66 E0 L0
+	G04 P0.05
+	T[#100+1]
+
+	;(MSG, Tool #100 prep-pocket #5399)
+
+	o105 IF[#5399 GT 0]
+		o110 IF[#5399 LT [#<NUMPOCKETS> + 1]]
+			
+			M6T#100
+			o<tool_touch_off_multi> call
+			T0
+		o110 ENDIF
+	o105 ENDIF	
+	#100 = [#100 + 1]
+o100 ENDWHILE
+
+o<store_tool_in_carousel> call
+
+
+o<rack_touch_off> endsub
+
+M2 (end program)
+%

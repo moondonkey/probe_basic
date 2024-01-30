@@ -1,11 +1,12 @@
-o<tool_touch_off> sub
+o<tool_touch_off_multi> sub
+;This file exists because it is used in the rack_touch_off macro and it can't access the Probe basic variables for some reason
 
-#<fast_probe_fr> = #1    (set from probe screen fast probe feed rate)
-#<slow_probe_fr> = #2    (set from probe screen slow probe feedrate)
-#<z_max_travel> = #3    (max z distance the tool travels before erroring out if not contact is made)
-#<xy_max_travel> = #4    (max xy distance the tool travels before erroring out if not contact is made)
-#<retract_distance> = #6    (distance the tool retracts after making contact during fast feed mode)
-#<spindle_zero_height> = #5    (G53 distance from home to spindle nose triggering point on touch plate)
+#<fast_probe_fr> = 400    (set from probe screen fast probe feed rate)
+#<slow_probe_fr> = 25    (set from probe screen slow probe feedrate)
+#<z_max_travel> = 110    (max z distance the tool travels before erroring out if not contact is made)
+#<xy_max_travel> = 0    (max xy distance the tool travels before erroring out if not contact is made)
+#<retract_distance> = 1.5    (distance the tool retracts after making contact during fast feed mode)
+#<spindle_zero_height> = -25    (G53 distance from home to spindle nose triggering point on touch plate)
 #<tool_diameter_probe_mode> = #8    (activates the tool diameter probe subroutine section)
 #<tool_diameter_offset_mode> = #9    (activates the tool diameter offset position for probe subroutine section)
 #<tool_diameter> = #10    (current tool's diameter used for offseting probe position in x axis)
@@ -14,9 +15,9 @@ G92.1    (Cancel G92 offset)
 
 #<workspace_z> = #5220
 
-#<tool_touch_x_coords> = #5181
-#<tool_touch_y_coords> = #5182
-#<tool_touch_z_coords> = #5183
+#<tool_touch_x_coords> = 4.500
+#<tool_touch_y_coords> = 0.0
+#<tool_touch_z_coords> = -30
 
 #<tool_radius_offset> = [#<tool_diameter> / 2]
 #<offset_probing_position> = [#<tool_touch_x_coords> - #<tool_radius_offset>]
@@ -38,14 +39,13 @@ G53 G0 X#<tool_touch_x_coords>
 G53 G0 Y#<tool_touch_y_coords>
 G53 G0 Z#<tool_touch_z_coords>
 M64 P3
-
-
+G04 P2
+M65 P3
 
 G91
 F #<fast_probe_fr>
 G38.2 Z-[#<z_max_travel>]    (fast tool probe)
 #<z_fast_probe> = #5063    (save probe result of fast probe to parameters)
-M65 P3
 G0 Z[#<retract_distance>]    (retract tool retract distance amount)
 
 (Slow Probe Rule, if Slow Probe FR is set to 0, Slow Probe is Bypassed)
@@ -104,6 +104,6 @@ o<160> endif
 
 T #5400 G43  H #5400    (enable tool length offset)
 
-o<tool_touch_off> endsub
+o<tool_touch_off_multi> endsub
 
 M2 (end program)
